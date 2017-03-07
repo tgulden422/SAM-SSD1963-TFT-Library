@@ -29,7 +29,15 @@
 #define	TFT_RST			PIO_PB6_IDX			//Controller reset, active low
 
 //--------------	FUNCTION PROTOTYPES		--------------------
-
+void tft_init( void );
+void data_port_init( void );
+void ctl_bits_init( void );
+void write_data_port( uint32_t data_out );
+void set_mode_cmd( void );
+void set_mode_data( void );
+void bl_enable(	bool bl_state );
+void tft_enable( bool en_state );
+void rst_tft( void );
 
 //--------------	FUNCTION DEFINITION		--------------------
 void tft_init( void )
