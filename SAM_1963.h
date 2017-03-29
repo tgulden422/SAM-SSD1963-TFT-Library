@@ -14,9 +14,9 @@
 //--------------	IOPORT PIN SELECT		-------------------
 #define	TFT_LOW_PORT	IOPORT_PIOA			//ASF ports
 #define	TFT_HIGH_PORT	IOPORT_PIOD
-#define TFT_LOW_MASK	(	0x000000FF	) 	//Masks for offset port pin block
+#define TFT_LOW_MASK	(	0x1FE00000	) 	//Masks for offset port pin block
 #define TFT_HIGH_MASK	(	0x007F8000	) 
-#define TFT_LOW_OFFSET	(	0	)			//Pin offset from 0 for port block
+#define TFT_LOW_OFFSET	(	21	)			//Pin offset from 0 for port block
 #define	TFT_HIGH_OFFSET	(	15	)
 
 #define BL_EN			PIO_PB0_IDX			//Backlight enable
