@@ -7,6 +7,9 @@
 	in ASF wizard in Atmel Studio.
 **************************************************************/
 
+//--------------	DEPENDENCIES 	---------------------------
+#include <ioport.h>
+
 //--------------	CODE CONFIG		---------------------------
 #define	CLOCK_DELAY		(	0x00FFFFFF	)	//Provides crude delay interval for set/reset operation to be registered by controller if host MCU clock much faster
 #define RST_TFT_ON_INIT						//Comment out to disable controller reset on init
