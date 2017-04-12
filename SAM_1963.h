@@ -22,14 +22,14 @@
 #define TFT_LOW_OFFSET	(	21	)			//Pin offset from 0 for port block
 #define	TFT_HIGH_OFFSET	(	15	)
 
-#define BL_EN			PIO_PB0_IDX			//Backlight enable
-#define DC_SEL			PIO_PB1_IDX			//Data/command select, Low = Command, High = Data
-#define	WR_8080			PIO_PB2_IDX			//Write enable for 8080 mode, active low (Read/Write select in 6800 mode, Low = Write, High = Read)
-#define	RD_8080			PIO_PB3_IDX			//Read enable for 8080 mode, active low (Enable bit in 6800 mode)
-#define	CS_BIT			PIO_PB4_IDX			//Channel select, active low
+#define DC_SEL			//PIO_PB1_IDX			//Data/command select, Low = Command, High = Data
+#define	WR_8080			//PIO_PB2_IDX			//Write enable for 8080 mode, active low (Read/Write select in 6800 mode, Low = Write, High = Read)
+#define	RD_8080			//PIO_PB3_IDX			//Read enable for 8080 mode, active low (Enable bit in 6800 mode)
+#define	CS_BIT			//PIO_PB4_IDX			//Channel select, active low
 
-#define	TFT_ON			PIO_PB5_IDX			//Display power select
-#define	TFT_RST			PIO_PB6_IDX			//Controller reset, active low
+#define BL_EN			//PIO_PB0_IDX			//Backlight enable
+#define	TFT_ON			//PIO_PB5_IDX			//Display power select
+#define	TFT_RST			//PIO_PB6_IDX			//Controller reset, active low
 
 //--------------	FUNCTION PROTOTYPES		--------------------
 void tft_init( void );
@@ -98,11 +98,34 @@ void write_data_port( uint32_t data_out )
 	uint32_t buffer_low;
 	uint32_t buffer_high;
 	
-	buffer_low = TFT_LOW_MASK & data_out;
-	buffer_high = TFT_HIGH_MASK & (data_out << TFT_HIGH_OFFSET);
+	buffer_low = TFT_LOW_MASK & (data_out << TFT_LOW_OFFSET);
+	buffer_high = TFT_HIGH_MASK & (data_out << (TFT_HIGH_OFFSET - 8));
 	
 	ioport_set_port_level(TFT_LOW_PORT, TFT_LOW_MASK, buffer_low);
 	ioport_set_port_level(TFT_HIGH_PORT, TFT_HIGH_MASK, buffer_high);
+}
+
+uint32_t read_data_port( )
+{
+	//Reads word from data pins
+	uint32_t buffer_low;
+	uint32_t buffer_high;
+	uint32_t data_in;
+	
+	//Temporarily set port as input
+	ioport_set_port_dir(TFT_LOW_PORT, TFT_LOW_MASK, IOPORT_DIR_INPUT);
+	ioport_set_port_dir(TFT_HIGH_PORT, TFT_HIGH_MASK, IOPORT_DIR_INPUT);
+
+	buffer_low = ioport_get_port_level(TFT_LOW_PORT, TFT_LOW_MASK);
+	buffer_high = ioport_get_port_level(TFT_HIGH_PORT, TFT_HIGH_MASK);
+
+	data_in = (buffer_high >> (TFT_HIGH_OFFSET - 8)) | (buffer_low >> (TFT_LOW_OFFSET));
+
+	//Set port back as output
+	ioport_set_port_dir(TFT_LOW_PORT, TFT_LOW_MASK, IOPORT_DIR_OUTPUT);
+	ioport_set_port_dir(TFT_HIGH_PORT, TFT_HIGH_MASK, IOPORT_DIR_OUTPUT);
+
+	return 
 }
 
 void set_mode_cmd( void )
