@@ -7,159 +7,86 @@
 	in ASF wizard in Atmel Studio.
 **************************************************************/
 
-//--------------	DEPENDENCIES 	---------------------------
-#include <ioport.h>
-
-//--------------	CODE CONFIG		---------------------------
-#define	CLOCK_DELAY		(	0x00FFFFFF	)	//Provides crude delay interval for set/reset operation to be registered by controller if host MCU clock much faster
-#define RST_TFT_ON_INIT						//Comment out to disable controller reset on init
-
-//--------------	IOPORT PIN SELECT		-------------------
-#define	TFT_LOW_PORT	IOPORT_PIOA			//ASF ports
-#define	TFT_HIGH_PORT	IOPORT_PIOD
-#define TFT_LOW_MASK	(	0x1FE00000	) 	//Masks for offset port pin block
-#define TFT_HIGH_MASK	(	0x007F8000	) 
-#define TFT_LOW_OFFSET	(	21	)			//Pin offset from 0 for port block
-#define	TFT_HIGH_OFFSET	(	15	)
-
-#define DC_SEL			//PIO_PB1_IDX			//Data/command select, Low = Command, High = Data
-#define	WR_8080			//PIO_PB2_IDX			//Write enable for 8080 mode, active low (Read/Write select in 6800 mode, Low = Write, High = Read)
-#define	RD_8080			//PIO_PB3_IDX			//Read enable for 8080 mode, active low (Enable bit in 6800 mode)
-#define	CS_BIT			//PIO_PB4_IDX			//Channel select, active low
-
-#define BL_EN			//PIO_PB0_IDX			//Backlight enable
-#define	TFT_ON			//PIO_PB5_IDX			//Display power select
-#define	TFT_RST			//PIO_PB6_IDX			//Controller reset, active low
-
-//--------------	FUNCTION PROTOTYPES		--------------------
-void tft_init( void );
-void data_port_init( void );
-void ctl_bits_init( void );
-void write_data_port( uint32_t data_out );
-void set_mode_cmd( void );
-void set_mode_data( void );
-void bl_enable(	bool bl_state );
-void tft_enable( bool en_state );
-void rst_tft( void );
-
-//--------------	FUNCTION DEFINITION		--------------------
-void tft_init( void )
-{
-	//Initializes TFT display/controller
-	data_port_init();
-	ctl_bits_init();
-}
-
-void data_port_init( void )
-{
-	//Initializes selected port pins in output mode, sets pins to low
-	ioport_set_port_dir(TFT_LOW_PORT, TFT_LOW_MASK, IOPORT_DIR_OUTPUT);
-	ioport_set_port_dir(TFT_HIGH_PORT, TFT_HIGH_MASK, IOPORT_DIR_OUTPUT);
+#ifndef	SAM_1963_DEFINED
+	#define SAM_1963_DEFINED
 	
-	write_data_port( (uint32_t) 0x0 );
-}
+	//--------------	DEPENDENCIES 	---------------------------
+	#include <ioport.h>
 
-void ctl_bits_init( void )
-{
-	//Initializes selected control pins in output mode, and sets pins to default value
-	ioport_set_pin_dir(BL_EN, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(DC_SEL, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(WR_8080, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(RD_8080, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(CS_BIT, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(TFT_ON, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(TFT_RST, IOPORT_DIR_OUTPUT);
+	//--------------	CODE CONFIG		---------------------------
+	#define	CLOCK_DELAY		(	0x000000FF	)	//Provides crude delay interval for set/reset operation to be registered by controller if host MCU clock much faster
+	#define	NS_DELAY		(	0x00000001	)	//loop delay for 1 ns
+	#define RST_TFT_ON_INIT						//Comment out to disable controller reset on init
+
+	//--------------	IOPORT PIN SELECT		-------------------
+	#define	TFT_LOW_PORT	IOPORT_PIOA			//ASF ports
+	#define	TFT_HIGH_PORT	IOPORT_PIOD
+	#define TFT_LOW_MASK	(	0x1FE00000	) 	//Masks for offset port pin block
+	#define TFT_HIGH_MASK	(	0x007F8000	) 
+	#define TFT_LOW_OFFSET	(	21	)			//Pin offset from 0 for port block
+	#define	TFT_HIGH_OFFSET	(	15	)
+
+	#define BL_EN			PIO_PC12_IDX	//OK	//Backlight enable
+	#define DC_SEL			PIO_PA29_IDX	//OK	//Data/command select, Low = Command, High = Data
+	#define	WR_8080			PIO_PA10_IDX	//OK	//Write enable for 8080 mode, active low (Read/Write select in 6800 mode, Low = Write, High = Read)
+	#define	RD_8080			PIO_PA12_IDX	//OK	//Read enable for 8080 mode, active low (Enable bit in 6800 mode)
+	#define	CS_BIT			PIO_PC14_IDX	//OK	//Channel select, active low
+	#define	TFT_ON			PIO_PA18_IDX	//OK	//Display power select, ( DISP )
+	#define	TFT_RST			PIO_PA31_IDX	//OK	//Controller reset, active low
+
+	// Data Port Low Byte [PA:12~28]
+	#define DATA_0			PIO_PA21_IDX	//OK
+	#define	DATA_1			PIO_PA22_IDX	//OK
+	#define	DATA_2			PIO_PA23_IDX	//OK
+	#define	DATA_3			PIO_PA24_IDX	//OK
+	#define DATA_4			PIO_PA25_IDX	//OK
+	#define	DATA_5			PIO_PA26_IDX	//OK
+	#define	DATA_6			PIO_PA27_IDX	//OK
+	#define	DATA_7			PIO_PA28_IDX	//OK
+
+	// Data Port High Byte [PD:15~22]
+	#define DATA_8			PIO_PD15_IDX	//OK
+	#define	DATA_9			PIO_PD16_IDX	//OK
+	#define	DATA_10			PIO_PD17_IDX	//OK
+	#define	DATA_11			PIO_PD18_IDX	//OK
+	#define DATA_12			PIO_PD19_IDX	//OK
+	#define	DATA_13			PIO_PD20_IDX	//OK
+	#define	DATA_14			PIO_PD21_IDX	//OK
+	#define	DATA_15			PIO_PD22_IDX	//OK
+
+	//--------------	FUNCTION PROTOTYPES		--------------------
+	void tft_delay( uint32_t );
+	void tft_write( uint32_t , bool );
+	uint32_t tft_read( void );
 	
-	//Enable backlight
-	bl_enable(true);
+	void tft_init( void );
+	void data_port_init( void );
+	void ctl_bits_init( void );
+	void write_data_port( uint32_t );
+	uint32_t read_data_port( void );
+
+	// Pin direction setting
+	void set_write_enable( void );
+	void set_read_enable( void );
 	
-	//Set command mode
-	ioport_set_pin_level(DC_SEL, 0);
+//	void set_mode_cmd( void );
+	#define set_mode_cmd() ioport_set_pin_level(DC_SEL, 0) //Sets command mode
+	//OK
 	
-	//Disable channel select
-	ioport_set_pin_level(CS_BIT, 1);
+//	void set_mode_data( void );
+	#define set_mode_data() ioport_set_pin_level(DC_SEL, 1) //Sets data mode
+	//OK
+
+//	void tft_select( bool cs_state );
+	#define tft_select(cs_state) ioport_set_pin_level(CS_BIT, cs_state) //Selects or deselects the display based on cs_state (8080 Mode Timing Diagram)
 	
-	//Reset WR# and RD# high
-	ioport_set_pin_level(WR_8080, 1);
-	ioport_set_pin_level(RD_8080, 1);
+//	void bl_enable(	bool bl_state );
+	#define bl_enable(bl_state)	ioport_set_pin_level(BL_EN, bl_state)	//Enables or disables backlight based on bl_state
+	//OK
+
+//	void tft_enable( bool en_state );
+	#define tft_enable(en_state) ioport_set_pin_level(TFT_ON, en_state) //Turns TFT on or off based on en_state
 	
-#ifdef	RST_TFT_ON_INIT
-	//Reset TFT controller
-	rst_tft();
+	void rst_tft( void );
+
 #endif
-	
-	//Turn on TFT
-	ioport_set_pin_level(TFT_ON, 1);
-}
-
-void write_data_port( uint32_t data_out )
-{
-	//Writes word to data pins
-	uint32_t buffer_low;
-	uint32_t buffer_high;
-	
-	buffer_low = TFT_LOW_MASK & (data_out << TFT_LOW_OFFSET);
-	buffer_high = TFT_HIGH_MASK & (data_out << (TFT_HIGH_OFFSET - 8));
-	
-	ioport_set_port_level(TFT_LOW_PORT, TFT_LOW_MASK, buffer_low);
-	ioport_set_port_level(TFT_HIGH_PORT, TFT_HIGH_MASK, buffer_high);
-}
-
-uint32_t read_data_port( )
-{
-	//Reads word from data pins
-	uint32_t buffer_low;
-	uint32_t buffer_high;
-	uint32_t data_in;
-	
-	//Temporarily set port as input
-	ioport_set_port_dir(TFT_LOW_PORT, TFT_LOW_MASK, IOPORT_DIR_INPUT);
-	ioport_set_port_dir(TFT_HIGH_PORT, TFT_HIGH_MASK, IOPORT_DIR_INPUT);
-
-	buffer_low = ioport_get_port_level(TFT_LOW_PORT, TFT_LOW_MASK);
-	buffer_high = ioport_get_port_level(TFT_HIGH_PORT, TFT_HIGH_MASK);
-
-	data_in = (buffer_high >> (TFT_HIGH_OFFSET - 8)) | (buffer_low >> (TFT_LOW_OFFSET));
-
-	//Set port back as output
-	ioport_set_port_dir(TFT_LOW_PORT, TFT_LOW_MASK, IOPORT_DIR_OUTPUT);
-	ioport_set_port_dir(TFT_HIGH_PORT, TFT_HIGH_MASK, IOPORT_DIR_OUTPUT);
-
-	return 
-}
-
-void set_mode_cmd( void )
-{
-	//Sets command mode
-	ioport_set_pin_level(DC_SEL, 0);
-}
-
-void set_mode_data( void )
-{
-	//Sets data mode
-	ioport_set_pin_level(DC_SEL, 1);
-}
-
-void bl_enable(	bool bl_state )
-{
-	//Enables or disable backlight based on bl_state
-	ioport_set_pin_level(BL_EN, bl_state);
-}
-
-void tft_enable( bool en_state )
-{
-	//Turns TFT on or off based on en_state
-	ioport_set_pin_level(TFT_ON, en_state);
-}
-
-void rst_tft( void )
-{
-	//Reset TFT controller
-	ioport_set_pin_level(TFT_RST, 1);
-	
-	//Crude delay to ensure reference clock can catch up with host MCU clock
-	volatile int count;
-	for(count = 0; count < CLOCK_DELAY; count++);
-	
-	ioport_set_pin_level(TFT_RST, 0);
-}
